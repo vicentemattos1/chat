@@ -41,7 +41,7 @@ export const ChatSidebar = ({
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <Button
           onClick={onNewChat}
-          className="w-full bg-sidebar-accent hover:bg-message-user text-sidebar-accent-foreground hover:text-sidebar-primary-foreground transition-colors duration-fast group"
+          className="w-full bg-sidebar-accent hover:bg-primary text-sidebar-accent-foreground hover:text-sidebar-primary-foreground transition-colors duration-fast group"
         >
           <MessageSquarePlus className="mr-2 h-4 w-4 transition-transform duration-fast group-hover:scale-110" />
           New Chat
