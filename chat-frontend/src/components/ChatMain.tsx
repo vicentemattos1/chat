@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import type { Chat } from './ChatInterface'
 import { SidebarTrigger } from './ui/sidebar'
+import type { Chat } from '@/pages/chat'
 
 interface ChatMainProps {
   chat: Chat | undefined
@@ -85,7 +85,7 @@ export const ChatMain = ({ chat, onSendMessage }: ChatMainProps) => {
                   <div
                     className={`rounded-2xl px-4 py-3 ${
                       message.role === 'user'
-                        ? 'bg-message-user text-message-user-foreground ml-auto bg-accent p-1 rounded-md'
+                        ? 'bg-message-user text-message-user-foreground ml-auto p-1 rounded-md'
                         : 'bg-message-assistant text-message-assistant-foreground border border-border'
                     }`}
                   >
@@ -159,7 +159,7 @@ export const ChatMain = ({ chat, onSendMessage }: ChatMainProps) => {
               type="submit"
               size="sm"
               disabled={!input.trim()}
-              className="bg-purple-500/50 hover:bg-purple-500 absolute right-2 bottom-2 h-8 w-8 p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-fast hover:scale-105 disabled:hover:scale-100"
+              className="bg-message-user hover:bg-message-user/80 absolute right-2 bottom-2 h-8 w-8 p-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-fast hover:scale-105 disabled:hover:scale-100"
             >
               <Send className="h-4 w-4 text-white" />
             </Button>
