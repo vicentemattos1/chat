@@ -1,7 +1,7 @@
 import { ChatInterface } from '@/components/ChatInterface';
 
-const App = () => {
+const ChatPage = () => {
   return <ChatInterface />;
 };
 
-export default App;
+export default ChatPage;

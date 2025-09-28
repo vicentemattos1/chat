@@ -17,16 +17,7 @@ interface ChatSidebarProps {
 }
 
 export const ChatSidebar = ({ chats, activeChat, onChatSelect, onNewChat }: ChatSidebarProps) => {
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const diffTime = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
-  };
+
 
   const groupChatsByDate = (chats: Chat[]) => {
     const groups: { [key: string]: Chat[] } = {};
@@ -75,6 +66,7 @@ export const ChatSidebar = ({ chats, activeChat, onChatSelect, onNewChat }: Chat
 
                     <Button
                       className='flex flex-1 overflow-hidden max-w-full justify-start hover:bg-transparent bg-transparent text-white'
+                      onClick={()=> onChatSelect(chat.id)}
                     >
                       <MessageSquarePlus className="mr-3 h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{chat.title}</span>
@@ -119,3 +111,14 @@ export const ChatSidebar = ({ chats, activeChat, onChatSelect, onNewChat }: Chat
     </Sidebar>
   );
 };
+
+  const formatDate = (date: Date) => {
+    const now = new Date();
+    const diffTime = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  };

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatMain } from './ChatMain';
+import { useNavigate, useParams } from 'react-router';
 
 export interface Message {
   id: string;
@@ -19,6 +20,9 @@ export interface Chat {
 }
 
 export const ChatInterface = () => {
+  const { id } = useParams();
+  const activeChat = id ?? ''
+  const navigate = useNavigate()
   const [chats, setChats] = useState<Chat[]>([
     {
       id: '1',
@@ -76,8 +80,6 @@ export const ChatInterface = () => {
     },
   ]);
 
-  const [activeChat, setActiveChat] = useState<string>(chats[0]?.id || '');
-
   const getCurrentChat = () => chats.find(chat => chat.id === activeChat);
 
   const addMessage = (content: string) => {
@@ -100,7 +102,6 @@ export const ChatInterface = () => {
         : chat
     ));
 
-    // Simulate AI response
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -122,17 +123,12 @@ export const ChatInterface = () => {
   };
 
   const createNewChat = () => {
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      title: 'New Chat',
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setChats(prev => [newChat, ...prev]);
-    setActiveChat(newChat.id);
+    navigate('/')
   };
+
+  const handleChangeChat = (id: string)=>{
+    navigate(`/${id}`)
+  }
 
   return (
     <div className="flex h-screen w-full bg-chat-main">
@@ -141,7 +137,7 @@ export const ChatInterface = () => {
           <ChatSidebar 
             chats={chats}
             activeChat={activeChat}
-            onChatSelect={setActiveChat}
+            onChatSelect={handleChangeChat}
             onNewChat={createNewChat}
           />
 
