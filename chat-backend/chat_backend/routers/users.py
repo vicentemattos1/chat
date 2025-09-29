@@ -28,7 +28,6 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 async def create_user(user: UserSchema, session: Session):
-    # Conflitos por username OU email
     db_user = await session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)

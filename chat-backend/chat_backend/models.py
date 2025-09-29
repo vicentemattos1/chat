@@ -5,7 +5,6 @@ from typing import Optional
 from sqlalchemy import ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
-# Registry único para todas as tabelas
 table_registry = registry()
 
 
@@ -26,7 +25,6 @@ class User:
         init=False, server_default=func.now()
     )
 
-    # relacionamento com chats
     chats: Mapped[list['Chat']] = relationship(
         init=False,
         cascade='all, delete-orphan',

@@ -13,7 +13,6 @@ class FilterPage(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-# ----- Schemas de User -----
 class UserSchema(BaseModel):
     username: str = Field(min_length=3, max_length=80)
     password: str = Field(min_length=6)

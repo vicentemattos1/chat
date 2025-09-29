@@ -1,10 +1,12 @@
 from http import HTTPStatus
 from typing import Annotated
 
+import anyio
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from chat_backend.ai.service import get_ai_reply
 from chat_backend.database import get_session
 from chat_backend.models import Chat, Message, User
 from chat_backend.schemas.chats import (
@@ -117,19 +119,46 @@ async def add_message(
             status_code=HTTPStatus.NOT_FOUND, detail='Chat not found'
         )
 
-    msg = Message(chat_id=chat_id, role=payload.role, content=payload.content)
-    session.add(msg)
+    if payload.role != 'user':
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Only 'user' role can start AI flow",
+        )
 
-    # Atualiza last_message_at para ordenar por recente
+    user_msg = Message(
+        chat_id=chat_id, role=payload.role, content=payload.content
+    )
+    session.add(user_msg)
+
+    chat.last_message_at = func.now()
+
+    try:
+        with anyio.fail_after(30):
+            ai_text = await get_ai_reply(payload.content)
+    except TimeoutError:
+        await session.rollback()
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_GATEWAY, detail='AI provider timeout'
+        )
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_GATEWAY,
+            detail=f'AI provider error: {e}',
+        )
+
+    bot_msg = Message(chat_id=chat_id, role='bot', content=ai_text)
+    session.add(bot_msg)
     chat.last_message_at = func.now()
 
     await session.commit()
-    await session.refresh(msg)
+    await session.refresh(bot_msg)
+
     return MessageRead(
-        id=msg.id,
-        role=msg.role,
-        content=msg.content,
-        created_at=msg.created_at,
+        id=bot_msg.id,
+        role=bot_msg.role,
+        content=bot_msg.content,
+        created_at=bot_msg.created_at,
     )
 
 

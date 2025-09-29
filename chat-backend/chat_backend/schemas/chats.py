@@ -10,7 +10,6 @@ class MessageRole(str, Enum):
     bot = 'bot'
 
 
-# ---- Chats ----
 class ChatCreate(BaseModel):
     title: str = Field(default='New chat')
 
@@ -26,7 +25,6 @@ class ChatList(BaseModel):
     chats: List[ChatRead]
 
 
-# ---- Messages ----
 class MessageCreate(BaseModel):
     role: MessageRole
     content: str
