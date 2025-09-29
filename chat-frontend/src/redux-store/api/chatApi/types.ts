@@ -17,7 +17,7 @@ export interface ChatListResponse {
 
 export interface Message {
   id: number
-  role: 'user' | 'assistant'
+  role: 'user' | 'bot'
   content: string
   created_at: string
 }

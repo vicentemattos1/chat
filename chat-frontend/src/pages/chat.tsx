@@ -6,7 +6,7 @@ import { ChatSidebar } from '@/components/ChatSidebar'
 export interface Message {
   id: string
   content: string
-  role: 'user' | 'assistant'
+  role: 'user' | 'bot'
   timestamp: Date
 }
 

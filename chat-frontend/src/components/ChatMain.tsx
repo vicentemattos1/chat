@@ -12,7 +12,7 @@ import {
 import { ChatMessage } from './ChatMessage'
 
 type OptimisticMessage = {
-  role: 'user' | 'assistant'
+  role: 'user' | 'bot'
   content: string
   created_at: string
 }
@@ -62,12 +62,12 @@ export const ChatMain = () => {
         {
           content: '...',
           created_at: '',
-          role: 'assistant',
+          role: 'bot',
         },
       ])
 
       if (!chatId) {
-        const response = await createChat(input.slice(0, 50)[0]).unwrap()
+        const response = await createChat(input.slice(0, 50)).unwrap()
 
         chatId = `${response.id}`
       }

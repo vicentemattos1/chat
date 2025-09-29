@@ -20,8 +20,8 @@
   --background: hsl(0 0% 100%);
   --message-user: hsl(217 91% 60%);
   --message-user-foreground: hsl(0 0% 100%);
-  --message-assistant: hsl(0 0% 100%);
-  --message-assistant-foreground: hsl(215 28% 17%);
+  --message-bot: hsl(0 0% 100%);
+  --message-bot-foreground: hsl(215 28% 17%);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -86,8 +86,8 @@ h1 {
 }
 
 @theme inline {
-  --color-message-assistant: var(--message-assistant);
-  --color-message-assistant-foreground: var(--message-assistant-foreground);
+  --color-message-bot: var(--message-bot);
+  --color-message-bot-foreground: var(--message-bot-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -132,8 +132,8 @@ h1 {
   --card-foreground: oklch(0.985 0 0);
   --message-user: hsl(217 91% 60%);
   --message-user-foreground: hsl(0 0% 100%);
-  --message-assistant: hsl(220 13% 12%);
-  --message-assistant-foreground: hsl(220 9% 85%);
+  --message-bot: hsl(220 13% 12%);
+  --message-bot-foreground: hsl(220 9% 85%);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: hsl(217 91% 60%);

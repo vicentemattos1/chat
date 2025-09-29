@@ -13,7 +13,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         message.role === 'user' ? 'justify-end' : 'justify-start'
       }`}
     >
-      {message.role === 'assistant' && (
+      {message.role === 'bot' && (
         <div className="flex-shrink-0">
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
             <Bot className="h-4 w-4 text-primary-foreground" />
@@ -28,7 +28,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           className={`rounded-2xl px-4 py-3 ${
             message.role === 'user'
               ? 'bg-primary text-message-user-foreground ml-auto p-1 rounded-md'
-              : 'bg-message-assistant text-message-assistant-foreground border border-border'
+              : 'bg-message-bot text-message-bot-foreground border border-border'
           }`}
         >
           <div className="prose prose-sm max-w-none">
@@ -42,7 +42,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   className={`${index === 0 ? 'mt-0' : ''} ${
                     message.role === 'user'
                       ? 'text-message-user-foreground'
-                      : 'text-message-assistant-foreground'
+                      : 'text-message-bot-foreground'
                   }`}
                 >
                   {line || '\u00A0'}
