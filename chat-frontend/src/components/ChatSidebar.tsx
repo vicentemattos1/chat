@@ -7,17 +7,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useGetChatListQuery } from '@/redux-store/api/chatApi'
+import {
+  useDeleteChatMutation,
+  useGetChatListQuery,
+} from '@/redux-store/api/chatApi'
 import type { ChatListItem } from '@/redux-store/api/chatApi/types'
 import { useNavigate, useParams } from 'react-router'
+import { toast } from 'sonner'
 
 export const ChatSidebar = () => {
   const { id } = useParams()
   const { data } = useGetChatListQuery()
   const navigate = useNavigate()
 
+  const [deleteChat] = useDeleteChatMutation()
+
   const activeChat = id ? parseInt(id) : undefined
   const chatGroups = groupChatsByDate(data?.chats ?? [])
+
+  async function handleDeleteChat(id: number) {
+    try {
+      await deleteChat(id).unwrap()
+
+      toast.success('Chat deleted.')
+    } catch {}
+  }
 
   return (
     <Sidebar className="bg-chat-sidebar border-r border-sidebar-border">
@@ -71,7 +85,10 @@ export const ChatSidebar = () => {
                           <Edit3 className="mr-2 h-4 w-4" />
                           Rename
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center text-destructive focus:text-destructive">
+                        <DropdownMenuItem
+                          className="flex items-center text-destructive focus:text-destructive"
+                          onClick={() => handleDeleteChat(chat.id)}
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>

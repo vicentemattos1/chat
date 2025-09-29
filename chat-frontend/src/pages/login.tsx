@@ -53,7 +53,6 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
-
   const onSubmit = async (data: LoginFormData) => {
     try {
       const { access_token } = await signUser({
@@ -62,8 +61,6 @@ const Login = () => {
       }).unwrap()
 
       credentialsHelper.set(access_token)
-
-      toast.success('Account created!')
 
       navigate('/chat', { replace: true })
     } catch {

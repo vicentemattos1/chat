@@ -17,6 +17,7 @@ export const chatsApi = baseApi
           url: '/chats',
           method: 'GET',
         }),
+        providesTags: ['chats'],
       }),
       getChat: builder.query<ChatDetailResponse, string>({
         query: (id) => ({
@@ -32,6 +33,13 @@ export const chatsApi = baseApi
           body: {
             title,
           },
+        }),
+        invalidatesTags: ['chats'],
+      }),
+      deleteChat: builder.mutation<void, number>({
+        query: (id) => ({
+          url: `/chats/${id}`,
+          method: 'DELETE',
         }),
         invalidatesTags: ['chats'],
       }),
@@ -54,7 +62,7 @@ export const {
   useGetChatQuery,
   useCreateChatMutation,
   useSendMessageMutation,
-  useLazyGetChatListQuery,
+  useDeleteChatMutation,
 } = chatsApi
 
 export type { ChatListResponse, ChatDetailResponse } from './types'

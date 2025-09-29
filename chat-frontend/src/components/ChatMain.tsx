@@ -7,7 +7,6 @@ import { useNavigate, useParams } from 'react-router'
 import {
   useCreateChatMutation,
   useGetChatQuery,
-  useLazyGetChatListQuery,
   useSendMessageMutation,
 } from '@/redux-store/api/chatApi'
 import { ChatMessage } from './ChatMessage'
@@ -26,10 +25,9 @@ export const ChatMain = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const navigate = useNavigate()
 
-  const { data: chat } = useGetChatQuery(id ?? '', { skip: !isValidId })
+  const { data: chat, error } = useGetChatQuery(id ?? '', { skip: !isValidId })
   const [sendMessage] = useSendMessageMutation()
   const [createChat] = useCreateChatMutation()
-  const [fetchList] = useLazyGetChatListQuery()
 
   const [optimisticMessages, setOptimisticMessages] = useState<
     OptimisticMessage[]
@@ -44,6 +42,12 @@ export const ChatMain = () => {
 
     setOptimisticMessages([])
   }, [chat?.messages])
+
+  useEffect(() => {
+    if (error && 'status' in error && error.status === 404) {
+      navigate('/', { replace: true })
+    }
+  }, [error])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,11 +67,7 @@ export const ChatMain = () => {
       ])
 
       if (!chatId) {
-        const response = await createChat(
-          input.slice(0, 50).split(' ')[0],
-        ).unwrap()
-
-        await fetchList()
+        const response = await createChat(input.slice(0, 50)[0]).unwrap()
 
         chatId = `${response.id}`
       }
