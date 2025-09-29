@@ -7,40 +7,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { Chat } from '@/pages/chat'
+import { useGetChatListQuery } from '@/redux-store/api/chatApi'
+import type { ChatListItem } from '@/redux-store/api/chatApi/types'
+import { useNavigate, useParams } from 'react-router'
 
-interface ChatSidebarProps {
-  chats: Chat[]
-  activeChat: string
-  onChatSelect: (chatId: string) => void
-  onNewChat: () => void
-}
+export const ChatSidebar = () => {
+  const { id } = useParams()
+  const { data } = useGetChatListQuery()
+  const navigate = useNavigate()
 
-export const ChatSidebar = ({
-  chats,
-  activeChat,
-  onChatSelect,
-  onNewChat,
-}: ChatSidebarProps) => {
-  const groupChatsByDate = (chats: Chat[]) => {
-    const groups: { [key: string]: Chat[] } = {}
-
-    chats.forEach((chat) => {
-      const date = formatDate(chat.updatedAt)
-      if (!groups[date]) groups[date] = []
-      groups[date].push(chat)
-    })
-
-    return groups
-  }
-
-  const chatGroups = groupChatsByDate(chats)
+  const activeChat = id ? parseInt(id) : undefined
+  const chatGroups = groupChatsByDate(data?.chats ?? [])
 
   return (
     <Sidebar className="bg-chat-sidebar border-r border-sidebar-border">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <Button
-          onClick={onNewChat}
+          onClick={() => navigate('/', { replace: true })}
           className="w-full bg-sidebar-accent hover:bg-primary text-sidebar-accent-foreground hover:text-sidebar-primary-foreground transition-colors duration-fast group"
         >
           <MessageSquarePlus className="mr-2 h-4 w-4 transition-transform duration-fast group-hover:scale-110" />
@@ -67,7 +50,7 @@ export const ChatSidebar = ({
                   >
                     <Button
                       className="flex flex-1 overflow-hidden max-w-full justify-start hover:bg-transparent bg-transparent text-white"
-                      onClick={() => onChatSelect(chat.id)}
+                      onClick={() => navigate(`/${chat.id}`)}
                     >
                       <MessageSquarePlus className="mr-3 h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{chat.title}</span>
@@ -101,7 +84,7 @@ export const ChatSidebar = ({
           ))}
         </div>
 
-        {chats.length === 0 && (
+        {data?.chats.length === 0 && (
           <div className="flex flex-col items-center justify-center h-32 text-sidebar-foreground text-sm">
             <MessageSquarePlus className="h-8 w-8 mb-2 opacity-50" />
             <p>No conversations yet</p>
@@ -113,13 +96,26 @@ export const ChatSidebar = ({
   )
 }
 
-const formatDate = (date: Date) => {
+const formatDate = (dateStr: string) => {
   const now = new Date()
+  const date = new Date(dateStr)
   const diffTime = now.getTime() - date.getTime()
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
-  if (diffDays === 0) return 'Today'
+  if (diffDays < 0 || dateStr === null) return 'Today'
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return `${diffDays} days ago`
   return date.toLocaleDateString()
+}
+
+const groupChatsByDate = (chats: ChatListItem[]) => {
+  const groups: { [key: string]: ChatListItem[] } = {}
+
+  chats.forEach((chat) => {
+    const date = formatDate(chat.last_message_at)
+    if (!groups[date]) groups[date] = []
+    groups[date].push(chat)
+  })
+
+  return groups
 }

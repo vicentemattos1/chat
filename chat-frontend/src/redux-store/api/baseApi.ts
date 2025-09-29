@@ -7,7 +7,6 @@ const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_CHAT_API_URL,
   prepareHeaders: (headers) => {
     const token = credentialsHelper.get()
-
     if (token) {
       headers.set('Authorization', `Bearer ${token}`)
     }
@@ -26,8 +25,9 @@ const baseQueryWithErrorHandling = async (
   if (result.error) {
     const error = result.error as ApiError
 
-    if (error.status === 401) {
-      // api.dispatch(logout())
+    if (error.status === 401 && window.location.pathname !== '/login') {
+      credentialsHelper.clear()
+      window.location.replace('/login')
     }
   }
 

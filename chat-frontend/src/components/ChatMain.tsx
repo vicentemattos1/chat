@@ -1,19 +1,39 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User } from 'lucide-react'
+import { Send, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SidebarTrigger } from './ui/sidebar'
-import type { Chat } from '@/pages/chat'
+import { useNavigate, useParams } from 'react-router'
+import {
+  useCreateChatMutation,
+  useGetChatQuery,
+  useLazyGetChatListQuery,
+  useSendMessageMutation,
+} from '@/redux-store/api/chatApi'
+import { ChatMessage } from './ChatMessage'
 
-interface ChatMainProps {
-  chat: Chat | undefined
-  onSendMessage: (message: string) => void
+type OptimisticMessage = {
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
 }
 
-export const ChatMain = ({ chat, onSendMessage }: ChatMainProps) => {
+export const ChatMain = () => {
+  const { id } = useParams()
+  const isValidId = !isNaN(parseInt(id ?? ''))
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const navigate = useNavigate()
+
+  const { data: chat } = useGetChatQuery(id ?? '', { skip: !isValidId })
+  const [sendMessage] = useSendMessageMutation()
+  const [createChat] = useCreateChatMutation()
+  const [fetchList] = useLazyGetChatListQuery()
+
+  const [optimisticMessages, setOptimisticMessages] = useState<
+    OptimisticMessage[]
+  >([])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -21,17 +41,45 @@ export const ChatMain = ({ chat, onSendMessage }: ChatMainProps) => {
 
   useEffect(() => {
     scrollToBottom()
+
+    setOptimisticMessages([])
   }, [chat?.messages])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (input.trim()) {
-      onSendMessage(input)
-      setInput('')
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
+    let chatId = !isNaN(parseInt(id ?? '')) ? id : ''
+    try {
+      setOptimisticMessages([
+        {
+          content: input,
+          created_at: new Date().toISOString(),
+          role: 'user',
+        },
+        {
+          content: '...',
+          created_at: '',
+          role: 'assistant',
+        },
+      ])
+
+      if (!chatId) {
+        const response = await createChat(
+          input.slice(0, 50).split(' ')[0],
+        ).unwrap()
+
+        await fetchList()
+
+        chatId = `${response.id}`
       }
-    }
+
+      await sendMessage({
+        id: parseInt(chatId),
+        content: input,
+      }).unwrap()
+
+      setInput('')
+      navigate(`/${chatId}`)
+    } catch {}
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -51,82 +99,24 @@ export const ChatMain = ({ chat, onSendMessage }: ChatMainProps) => {
     }
   }
 
-  const formatTimestamp = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }
-
   return (
     <div className="relative mx-auto flex-1 flex flex-col bg-chat-main">
       <SidebarTrigger className="absolute top-0 left-0 m-2 self-end text-sidebar-foreground hover:text-sidebar-primary" />
 
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6" key={id ?? 'default'}>
         <div className="max-w-3xl mx-auto space-y-6">
-          {chat ? (
-            chat.messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-4 animate-chat-slide-up ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                      <Bot className="h-4 w-4 text-primary-foreground" />
-                    </div>
-                  </div>
-                )}
-
-                <div
-                  className={`max-w-[80%] ${
-                    message.role === 'user' ? 'order-2' : ''
-                  }`}
-                >
-                  <div
-                    className={`rounded-2xl px-4 py-3 ${
-                      message.role === 'user'
-                        ? 'bg-primary text-message-user-foreground ml-auto p-1 rounded-md'
-                        : 'bg-message-assistant text-message-assistant-foreground border border-border'
-                    }`}
-                  >
-                    <div className="prose prose-sm max-w-none">
-                      {message.content.split('\n').map((line, index) => {
-                        if (line.startsWith('```')) {
-                          return null // Handle code blocks separately if needed
-                        }
-                        return (
-                          <p
-                            key={index}
-                            className={`${index === 0 ? 'mt-0' : ''} ${
-                              message.role === 'user'
-                                ? 'text-message-user-foreground'
-                                : 'text-message-assistant-foreground'
-                            }`}
-                          >
-                            {line || '\u00A0'}
-                          </p>
-                        )
-                      })}
-                    </div>
-                  </div>
-                  <div
-                    className={`mt-1 text-xs text-muted-foreground ${
-                      message.role === 'user' ? 'text-right' : ''
-                    }`}
-                  >
-                    {formatTimestamp(message.timestamp)}
-                  </div>
-                </div>
-
-                {message.role === 'user' && (
-                  <div className="flex-shrink-0 order-3">
-                    <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-secondary-foreground" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
+          {isValidId && (chat || optimisticMessages.length > 0) ? (
+            <>
+              {chat?.messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+              {optimisticMessages.map((message) => (
+                <ChatMessage
+                  key={`optimistic-${message.role}`}
+                  message={message}
+                />
+              ))}
+            </>
           ) : (
             <div className="flex-1 flex items-center justify-center bg-chat-main">
               <div className="text-center text-muted-foreground">
